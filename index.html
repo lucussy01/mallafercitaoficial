@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Malla Interactiva Ingeniería Civil Industrial 2021</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h1 { text-align: center; margin-bottom: 30px; }
+
+    #malla {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+    }
+    .semestre {
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 220px;
+      box-sizing: border-box;
+    }
+    .semestre h3 {
+      text-align: center;
+      margin: 0 0 8px;
+      font-size: 1.1em;
+    }
+    .curso {
+      position: relative;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      padding: 8px;
+      margin: 6px 0;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .curso:hover { background: #f0f0f0; }
+    .curso.aprobado {
+      background: #d4edda;
+      border-color: #28a745;
+      color: #155724;
+    }
+    .curso.bloqueado {
+      background: #f8d7da;
+      border-color: #dc3545;
+      color: #721c24;
+      cursor: not-allowed;
+    }
+    .tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      top: 100%;
+      left: 0;
+      width: calc(100% - 12px);
+      box-sizing: border-box;
+      display: none;
+      z-index: 5;
+      white-space: pre-wrap;
+    }
+    .curso.bloqueado:hover .tooltip { display: block; }
+
+    /* Colores por código */
+    .MA { color: #c0392b; font-weight: 600; }
+    .FI { color: #2980b9; font-weight: 600; }
+    .IN { color: #27ae60; font-weight: 600; }
+    .CC { color: #8e44ad; font-weight: 600; }
+    .CD { color: #16a085; font-weight: 600; }
+    .IQ { color: #d35400; font-weight: 600; }
+    .BT { color: #6e2c00; font-weight: 600; }
+    .EI { color: #34495e; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Malla Interactiva Ingeniería Civil Industrial 2021</h1>
+  <div id="malla"></div>
+  <script>
+    const cursos = [
+      // I
+      {codigo:"MA1001",nombre:"Introducción al Cálculo",semestre:1,prerrequisitos:[]},
+      {codigo:"MA1101",nombre:"Introducción al Álgebra",semestre:1,prerrequisitos:[]},
+      {codigo:"FI1000",nombre:"Física Clásica I",semestre:1,prerrequisitos:[]},
+      {codigo:"CC1000",nombre:"Herram. Computacionales",semestre:1,prerrequisitos:[]},
+      {codigo:"CD1100",nombre:"Desafíos Innovación",semestre:1,prerrequisitos:[]},
+      {codigo:"BT1211",nombre:"Aplicac. Biológicas",semestre:1,prerrequisitos:[]},
+      // II
+      {codigo:"MA1002",nombre:"Cálculo Diferencial e Integral",semestre:2,prerrequisitos:["MA1001"]},
+      {codigo:"MA1102",nombre:"Álgebra Lineal",semestre:2,prerrequisitos:["MA1101"]},
+      {codigo:"FI1100",nombre:"Física Moderna",semestre:2,prerrequisitos:["FI1000","MA1001"]},
+      {codigo:"CC1002",nombre:"Intro a la Programación",semestre:2,prerrequisitos:[]},
+      {codigo:"CD1201",nombre:"Proyecto de Innovación",semestre:2,prerrequisitos:["CD1100"]},
+      {codigo:"IQ2211",nombre:"Química",semestre:2,prerrequisitos:[]},
+      // III
+      {codigo:"MA2001",nombre:"Cálculo Vble.",semestre:3,prerrequisitos:["MA1002","MA1102"]},
+      {codigo:"MA2601",nombre:"Ecuac. Diferenciales",semestre:3,prerrequisitos:["MA1002","MA1102"]},
+      {codigo:"FI2001",nombre:"Mecánica",semestre:3,prerrequisitos:["FI1100","MA1002","MA1102"]},
+      {codigo:"FI2003",nombre:"Métodos Experimentales",semestre:3,prerrequisitos:["FI1100","MA1002"]},
+      {codigo:"CD2201",nombre:"Módulo Interdisciplinario",semestre:3,prerrequisitos:["CD1201"]},
+      // IV
+      {codigo:"MA2002",nombre:"Cálculo Avanzado",semestre:4,prerrequisitos:["MA2001","MA2601"]},
+      {codigo:"IN2201",nombre:"Economía",semestre:4,prerrequisitos:["MA2001"]},
+      {codigo:"FI2002",nombre:"Electromagnetismo",semestre:4,prerrequisitos:["FI2001","MA2001"]},
+      {codigo:"FI2004",nombre:"Termodinámica",semestre:4,prerrequisitos:["FI2001","IQ2211"]},
+      // V
+      {codigo:"IN3171",nombre:"Modelamiento y Optimización",semestre:5,prerrequisitos:["MA2002"]},
+      {codigo:"IN3141",nombre:"Probabilidades",semestre:5,prerrequisitos:["MA2001"]},
+      {codigo:"IN3101",nombre:"Liderazgo e Innovación",semestre:5,prerrequisitos:["CD2201"]},
+      // VI
+      {codigo:"IN3221",nombre:"Teoría de Juegos",semestre:6,prerrequisitos:["IN2201","IN3141"]},
+      {codigo:"IN3272",nombre:"Decisiones bajo Incertidumbre",semestre:6,prerrequisitos:["IN3171","IN3141"]},
+      {codigo:"IN3242",nombre:"Estadística",semestre:6,prerrequisitos:["IN3141"]},
+      {codigo:"IN3301",nombre:"Evaluación de Proyectos",semestre:6,prerrequisitos:["IN3141","IN2201"]},
+      // VII
+      {codigo:"IN4102",nombre:"Taller de Proyectos",semestre:7,prerrequisitos:["IN3171","IN3101"]},
+      {codigo:"IN4123",nombre:"Macroeconomía",semestre:7,prerrequisitos:["IN2201","IN3141"]},
+      {codigo:"IN4143",nombre:"Inferencia Causal",semestre:7,prerrequisitos:["IN3242"]},
+      // VIII
+      {codigo:"IN4273",nombre:"Gestión Operaciones",semestre:8,prerrequisitos:["IN3171","IN3242"]},
+      {codigo:"IN4261",nombre:"Marketing",semestre:8,prerrequisitos:["IN3171","IN3242","IN3301"]},
+      {codigo:"IN4232",nombre:"Finanzas",semestre:8,prerrequisitos:["IN3301"]},
+      {codigo:"IN4191",nombre:"Ing. de la Información",semestre:8,prerrequisitos:["CC1002","IN3301","IN3242"]},
+      // IX
+      {codigo:"IN5112",nombre:"Dirección Estratégica",semestre:9,prerrequisitos:["IN4273","IN4261","IN4232"]},
+      {codigo:"IN5111",nombre:"Comportamiento Organizacional",semestre:9,prerrequisitos:["IN4191"]},
+      // X
+      {codigo:"IN6191",nombre:"Práctica Profesional I",semestre:10,prerrequisitos:["IN3272","IN4102","IN3301","IN4143","IN3141","FI2002","FI2004"]},
+      // XI
+      {codigo:"IN6192",nombre:"Práctica Profesional Extendida",semestre:11,prerrequisitos:["IN5111","IN5112","IN6191"]},
+      {codigo:"IN6193",nombre:"Proyecto de Título",semestre:11,prerrequisitos:["IN6192"]},
+      {codigo:"EI2090",nombre:"Examen Suficiencia Inglés II",semestre:11,prerrequisitos:[]}
+    ];
+
+    const key = "malla2021_estado";
+    const aprobados = new Set(JSON.parse(localStorage.getItem(key) || "[]"));
+
+    function save() {
+      localStorage.setItem(key, JSON.stringify([...aprobados]));
+    }
+
+    function render() {
+      const cont = document.getElementById("malla");
+      cont.innerHTML = "";
+      const max = Math.max(...cursos.map(c=>c.semestre));
+      for (let s = 1; s <= max; s++) {
+        const col = document.createElement("div");
+        col.className = "semestre";
+        col.innerHTML = `<h3>${s}° semestre</h3>`;
+        const lista = cursos.filter(c => c.semestre === s);
+        if (!lista.length) continue;
+        lista.forEach(c=>{
+          const div = document.createElement("div");
+          div.className = "curso";
+          div.textContent = `${c.codigo} - ${c.nombre}`;
+          const ok = c.prerrequisitos.every(p => aprobados.has(p));
+          if (aprobados.has(c.codigo)) div.classList.add("aprobado");
+          else if (!ok) {
+            div.classList.add("bloqueado");
+            const falt = c.prerrequisitos.filter(p => !aprobados.has(p));
+            const tip = document.createElement("div");
+            tip.className = "tooltip";
+            tip.textContent = "Falta: " + falt.join(", ");
+            div.appendChild(tip);
+          }
+          div.onclick = () => {
+            if (div.classList.contains("bloqueado")) return;
+            if (aprobados.has(c.codigo)) aprobados.delete(c.codigo);
+            else aprobados.add(c.codigo);
+            save(); render();
+          };
+          col.appendChild(div);
+        });
+        cont.appendChild(col);
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
